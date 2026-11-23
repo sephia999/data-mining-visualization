@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import io
 from scipy.sparse import csr_matrix
 from sklearn.neighbors import NearestNeighbors
 
@@ -25,19 +26,28 @@ dalam pembentukan model.
 @st.cache_data(show_spinner=False)
 def read_csv_file(file, required_columns):
     """Membaca CSV Book-Crossing dengan pemisah titik koma dan encoding latin-1."""
+
+    if isinstance(file, bytes):
+        file = io.BytesIO(file)
+
     df = pd.read_csv(
         file,
         sep=";",
         encoding="latin-1",
         dtype={"ISBN": str}
     )
+
     df.columns = df.columns.str.strip()
 
-    missing_columns = [col for col in required_columns if col not in df.columns]
+    missing_columns = [
+        col for col in required_columns if col not in df.columns
+    ]
+
     if missing_columns:
         raise ValueError(
             f"Kolom berikut tidak ditemukan: {', '.join(missing_columns)}"
         )
+
     return df
 
 
